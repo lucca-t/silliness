@@ -84,21 +84,22 @@ class BSTree extends JPanel {
     }
     public void preOrderTraversal() {
         String output = preOrder(root);
-        JOptionPane.showMessageDialog(this, output);
+        JOptionPane.showMessageDialog(this, output,"Pre Order Traversal",JOptionPane.INFORMATION_MESSAGE);
     }
 
     public void postOrderTraversal() {
         String output = postOrder(root);
-        JOptionPane.showMessageDialog(this, output);
+
+        JOptionPane.showMessageDialog(this, output,"Post Order Traversal",JOptionPane.INFORMATION_MESSAGE);
     }
 
     public void levelOrderTraversal() {
         String output = levelOrder(root);
-        JOptionPane.showMessageDialog(this, output);
+        JOptionPane.showMessageDialog(this, output,"Level Order Traversal",JOptionPane.INFORMATION_MESSAGE);
     }
     public void inOrderTraversal() {
         String output = inOrder(root);
-        JOptionPane.showMessageDialog(this, output);
+        JOptionPane.showMessageDialog(this, output,"In Order Traversal",JOptionPane.INFORMATION_MESSAGE);
     }
 
     public String preOrder(Node root) {
@@ -153,5 +154,12 @@ class BSTree extends JPanel {
             key = item;
             left = right = null;
         }
+    }
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Binary Search Tree");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setContentPane(new BSTree());
+        frame.pack();
+        frame.setVisible(true);
     }
 }
