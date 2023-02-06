@@ -3,7 +3,7 @@ import java.util.LinkedList;
 import javax.swing.*;
 import java.util.Queue;
 class BSTree extends JPanel {
-    Node root;
+    BinaryNode root;
 
     public BSTree() {
         setBackground(Color.WHITE);
@@ -17,6 +17,26 @@ class BSTree extends JPanel {
             inputField.setText("");
             repaint();
         });
+
+        JTextField deleteField = new JTextField();
+        deleteField.setPreferredSize(new Dimension(100, 50));
+        deleteField.setLocation(400,500);
+        deleteField.addActionListener(e -> {
+            int value = Integer.parseInt(deleteField.getText());
+            remove(root,value);
+            deleteField.setText("");
+            repaint();
+        });
+        JLabel deleteLabel = new JLabel("Delete:");
+
+        deleteLabel.setSize(100,500);
+        deleteLabel.setVisible(true);
+
+        JPanel deletePanel=new JPanel();
+        deletePanel.setLayout(new GridLayout(1, 2));
+        deletePanel.add(deleteLabel);
+        deletePanel.add(deleteField);
+        add(deletePanel);
         JButton preOrderButton = new JButton("Pre-Order");
         preOrderButton.addActionListener(e -> preOrderTraversal());
 
@@ -42,14 +62,14 @@ class BSTree extends JPanel {
         buttonPanel.add(postOrderButton);
         buttonPanel.add(levelOrderButton);
         buttonPanel.add(inOrderButton);
-
+        add(deleteField);
         add(inputField);
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    Node insert(Node node, int key) {
+    BinaryNode insert(BinaryNode node, int key) {
         if (node == null) {
-            return new Node(key);
+            return new BinaryNode(key);
         }
         if (key < node.key) {
             node.left = insert(node.left, key);
@@ -62,10 +82,10 @@ class BSTree extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        drawTree(g, root, getWidth() / 2, 100, 360);
+        drawTree(g, root, getWidth() / 2, 100, getWidth()/4);
     }
 
-    private void drawTree(Graphics g, Node node, int x, int y, int spacing) {
+    private void drawTree(Graphics g, BinaryNode node, int x, int y, int spacing) {
         if (node == null) {
             return;
         }
@@ -102,7 +122,7 @@ class BSTree extends JPanel {
         JOptionPane.showMessageDialog(this, output,"In Order Traversal",JOptionPane.INFORMATION_MESSAGE);
     }
 
-    public String preOrder(Node root) {
+    public String preOrder(BinaryNode root) {
         if (root == null) {
             return "";
         }
@@ -111,7 +131,7 @@ class BSTree extends JPanel {
         output += preOrder(root.right);
         return output;
     }
-    public String postOrder(Node root) {
+    public String postOrder(BinaryNode root) {
         if (root == null) {
             return "";
         }
@@ -120,7 +140,7 @@ class BSTree extends JPanel {
         output += root.key + " ";
         return output;
     }
-    public String inOrder(Node root) {
+    public String inOrder(BinaryNode root) {
         if (root == null) {
             return "";
         }
@@ -129,12 +149,12 @@ class BSTree extends JPanel {
         output += inOrder(root.right);
         return output;
     }
-    public String levelOrder(Node root) {
+    public String levelOrder(BinaryNode root) {
         String output = "";
-        Queue<Node> q = new LinkedList<>();
+        Queue<BinaryNode> q = new LinkedList<>();
         q.add(root);
         while (!q.isEmpty()) {
-            Node current = q.remove();
+            BinaryNode current = q.remove();
             output += current.key + " ";
             if (current.left != null) {
                 q.add(current.left);
@@ -145,16 +165,123 @@ class BSTree extends JPanel {
         }
         return output;
     }
+    private BinaryNode remove(BinaryNode startNode, int target)
+    {
+        BinaryNode nodeToRemove, inorderSuccessor;
+        BinaryNode parent = search(startNode,target);
 
-    class Node {
+        if(parent == null) {
+            return null;
+        }
+
+        //decide if it is a left or right child
+        boolean isLeft = parent.left()!=null &&
+                parent.left().getValue()==target;
+
+        nodeToRemove = isLeft ? parent.left() : parent.right();
+
+        //degree 0
+        if(nodeToRemove.left() == null && nodeToRemove.right() == null)
+        {
+            if(isLeft)
+                parent.setLeft(null);
+            else
+                parent.setRight(null);
+            return nodeToRemove;
+        }
+
+        //degree 1
+        else if(nodeToRemove.left() == null)
+        {
+            if(isLeft)
+                parent.setLeft(nodeToRemove.right());
+            else
+                parent.setRight(nodeToRemove.right());
+            nodeToRemove.setRight(null);
+            return nodeToRemove;
+        }
+        else if(nodeToRemove.right() == null)
+        {
+            if(isLeft)
+                parent.setLeft(nodeToRemove.left());
+            else
+                parent.setRight(nodeToRemove.left());
+            nodeToRemove.setLeft(null);
+            return nodeToRemove;
+        }
+
+        //degree 2
+        else
+        {
+            inorderSuccessor = successor(nodeToRemove);
+            swap(inorderSuccessor, nodeToRemove);
+            if(nodeToRemove.right()==inorderSuccessor)
+            {
+                nodeToRemove.setRight(inorderSuccessor.left());
+                inorderSuccessor.setRight(null);
+                return inorderSuccessor;
+            }
+            return remove(nodeToRemove.right(), target);
+        }
+
+    }
+    private BinaryNode search(BinaryNode parent, int target)
+    {
+        if(parent == null) return null;
+        if(parent.left()!=null && parent.left().getValue()==(target)||
+                parent.right()!=null && parent.right().getValue()==(target))
+            return parent;
+        else if(target<parent.getValue())
+            return search(parent.left(),target);
+        else
+            return search(parent.right(),target);
+    }
+
+    private BinaryNode successor(BinaryNode k)
+    {
+        BinaryNode temp = k;
+        temp = temp.right();
+        while(temp.left() != null)
+            temp = temp.left();
+        return temp;
+    }
+
+    private void swap(BinaryNode x, BinaryNode y)
+    {
+        Comparable k = x.getValue();
+        x.setValue(y.getValue());
+        y.setValue((Integer) k);
+    }
+
+    class BinaryNode {
         int key;
-        Node left, right;
+        BinaryNode left, right;
 
-        public Node(int item) {
+        public BinaryNode(int item) {
             key = item;
             left = right = null;
         }
+        public int getValue(){
+            return key;
+        }
+        public void setValue(int k){
+            key=k;
+        }
+        public BinaryNode left(){
+            return left;
+        }
+        public BinaryNode right(){
+            return right;
+        }
+        public void setLeft(BinaryNode k){
+            left=k;
+        }
+        public void setRight(BinaryNode k){
+            right=k;
+        }
+
     }
+
     public static void main(String[] args) {
         JFrame frame = new JFrame("Binary Search Tree");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
